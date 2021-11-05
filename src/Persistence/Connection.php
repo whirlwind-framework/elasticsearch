@@ -131,10 +131,10 @@ class Connection implements ConnectionInterface
         }
     }
 
-    public function createCommand($config = []): Command
+    public function createCommand(array $options = []): Command
     {
         $this->open();
-        $command = new Command($this);
+        $command = new Command($this, $options);
 
         return $command;
     }
@@ -333,5 +333,10 @@ class Connection implements ConnectionInterface
     public function getClusterState()
     {
         return $this->get(['_cluster', 'state']);
+    }
+
+    public function getDslVersion(): int
+    {
+        return $this->dslVersion;
     }
 }
