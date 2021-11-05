@@ -2,10 +2,12 @@
 
 namespace Whirlwind\ElasticSearch\Persistence\Query;
 
+use Whirlwind\ElasticSearch\Persistence\Connection;
+
 class QueryFactory
 {
-    public function create(): Query
+    public function create(Connection $connection): Query
     {
-        return new Query();
+        return new Query($connection);
     }
 }

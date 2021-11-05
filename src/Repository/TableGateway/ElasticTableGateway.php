@@ -40,7 +40,7 @@ class ElasticTableGateway implements TableGatewayInterface
     {
         $conditions = $this->conditionBuilder->build($conditions);
         /** @var Query $query */
-        $query = $this->queryFactory->create();
+        $query = $this->queryFactory->create($this->connection);
         $query
             ->from($this->collectionName)
             ->where($conditions);
@@ -109,7 +109,7 @@ class ElasticTableGateway implements TableGatewayInterface
     {
         $conditions = $this->conditionBuilder->build($conditions);
         /** @var Query $query */
-        $query = $this->queryFactory->create();
+        $query = $this->queryFactory->create($this->connection);
         $query
             ->from($this->collectionName)
             ->where($conditions);
@@ -134,7 +134,7 @@ class ElasticTableGateway implements TableGatewayInterface
     {
         $conditions = $this->conditionBuilder->build($conditions);
         /** @var Query $query */
-        $query = $this->queryFactory->create();
+        $query = $this->queryFactory->create($this->connection);
         return (string)$query->from($this->collectionName)->where($conditions)->count('*');
     }
 
