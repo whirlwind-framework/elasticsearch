@@ -44,7 +44,7 @@ class ElasticTableGateway implements TableGatewayInterface
         $query
             ->from($this->collectionName)
             ->where($conditions);
-        $result = $query->one($this->connection);
+        $result = $query->one();
         return $result ? $result : null;
     }
 
@@ -122,7 +122,7 @@ class ElasticTableGateway implements TableGatewayInterface
             $query->orderBy($order);
         }
 
-        return $query->all($this->connection);
+        return $query->all();
     }
 
     public function aggregate($column, $operator, array $conditions): string
@@ -135,7 +135,7 @@ class ElasticTableGateway implements TableGatewayInterface
         $conditions = $this->conditionBuilder->build($conditions);
         /** @var Query $query */
         $query = $this->queryFactory->create();
-        return (string)$query->from($this->collectionName)->where($conditions)->count('*', $this->connection);
+        return (string)$query->from($this->collectionName)->where($conditions)->count('*');
     }
 
     public function aggregateSum(string $field, array $conditions = []): string

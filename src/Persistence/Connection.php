@@ -2,6 +2,7 @@
 
 namespace Whirlwind\ElasticSearch\Persistence;
 
+use Whirlwind\ElasticSearch\Persistence\Query\QueryBuilder;
 use Whirlwind\Infrastructure\Persistence\ConnectionInterface;
 
 class Connection implements ConnectionInterface

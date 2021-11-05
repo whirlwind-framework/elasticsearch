@@ -181,10 +181,20 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
         return $this->one() !== false;
     }
 
+    public function getStats()
+    {
+        return $this->stats;
+    }
+
     public function stats($groups)
     {
         $this->stats = $groups;
         return $this;
+    }
+
+    public function getHighlight()
+    {
+        return $this->highlight;
     }
 
     public function highlight($highlight)
@@ -193,16 +203,31 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
         return $this;
     }
 
+    public function getAggregations()
+    {
+        return $this->aggregations;
+    }
+
     public function addAggregate($name, $options)
     {
         $this->aggregations[$name] = $options;
         return $this;
     }
 
+    public function getSuggest()
+    {
+        return $this->suggest;
+    }
+
     public function addSuggester($name, $definition)
     {
         $this->suggest[$name] = $definition;
         return $this;
+    }
+
+    public function getCollapse()
+    {
+        return $this->collapse;
     }
 
     public function addCollapse($collapse)
@@ -234,6 +259,11 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
         return $this;
     }
 
+    public function getStoredFields()
+    {
+        return $this->storedFields;
+    }
+
     public function storedFields($fields)
     {
         if (\is_array($fields) || $fields === null) {
@@ -242,6 +272,11 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
             $this->storedFields = \func_get_args();
         }
         return $this;
+    }
+
+    public function getScriptFields()
+    {
+        return $this->scriptFields;
     }
 
     public function scriptFields($fields)
@@ -254,6 +289,11 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
         return $this;
     }
 
+    public function getSource()
+    {
+        return $this->source;
+    }
+
     public function source($source)
     {
         if (\is_array($source) || $source === null) {
@@ -264,16 +304,31 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
         return $this;
     }
 
+    public function getTimeout()
+    {
+        return $this->timeout;
+    }
+
     public function timeout($timeout)
     {
         $this->timeout = $timeout;
         return $this;
     }
 
+    public function getMinScore()
+    {
+        return $this->minScore;
+    }
+
     public function minScore($minScore)
     {
         $this->minScore = $minScore;
         return $this;
+    }
+
+    public function getOptions()
+    {
+        return $this->options;
     }
 
     public function options($options)
@@ -318,15 +373,60 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
         return $this;
     }
 
+    public function getPostFilter()
+    {
+        return $this->postFilter;
+    }
+
     public function postFilter($filter)
     {
         $this->postFilter = $filter;
         return $this;
     }
 
+    public function getExplain()
+    {
+        return $this->explain;
+    }
+
     public function explain($explain)
     {
         $this->explain = $explain;
         return $this;
+    }
+
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
+    public function getOffset()
+    {
+        return $this->offset;
+    }
+
+    public function getWhere()
+    {
+        return $this->where;
+    }
+
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
+    public function getOrderBy()
+    {
+        return $this->orderBy;
+    }
+
+    public function getIndex()
+    {
+        return $this->index;
+    }
+
+    public function getType()
+    {
+        return $this->type;
     }
 }
