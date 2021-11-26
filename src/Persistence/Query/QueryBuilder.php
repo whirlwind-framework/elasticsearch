@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Whirlwind\ElasticSearch\Persistence\Query;
 
@@ -121,7 +123,8 @@ class QueryBuilder
         return $orders;
     }
 
-    public function buildQueryFromWhere($condition) {
+    public function buildQueryFromWhere($condition)
+    {
         $where = $this->buildCondition($condition);
         if ($where) {
             $query = [
@@ -176,7 +179,6 @@ class QueryBuilder
                 throw new \InvalidArgumentException('Found unknown operator in query: ' . $operator);
             }
         } else { // hash format: 'column1' => 'value1', 'column2' => 'value2', ...
-
             return $this->buildHashCondition($condition);
         }
     }
@@ -187,7 +189,8 @@ class QueryBuilder
         foreach ($condition as $attribute => $value) {
             if ($attribute == '_id') {
                 if ($value === null) { // there is no null pk
-                    $parts[] = ['bool' => ['must_not' => [['match_all' => new \stdClass()]]]]; // this condition is equal to WHERE false
+                    // this condition is equal to WHERE false
+                    $parts[] = ['bool' => ['must_not' => [['match_all' => new \stdClass()]]]];
                 } else {
                     $parts[] = ['ids' => ['values' => \is_array($value) ? $value : [$value]]];
                 }
@@ -234,7 +237,7 @@ class QueryBuilder
         $parts = [];
         if ($operator === 'and') {
             $clause = 'must';
-        } else if ($operator === 'or') {
+        } elseif ($operator === 'or') {
             $clause = 'should';
         } else {
             throw new \InvalidArgumentException("Operator should be 'or' or 'and'");
@@ -265,13 +268,13 @@ class QueryBuilder
             throw new \InvalidArgumentException("Operator '$operator' requires three operands.");
         }
 
-        list($column, $value1, $value2) = $operands;
+        [$column, $value1, $value2] = $operands;
         if ($column === '_id') {
             throw new \InvalidArgumentException('Between condition is not supported for the _id field.');
         }
         $filter = ['range' => [$column => ['gte' => $value1, 'lte' => $value2]]];
         if ($operator === 'not between') {
-            $filter = ['bool' => ['must_not'=>$filter]];
+            $filter = ['bool' => ['must_not' => $filter]];
         }
 
         return $filter;
@@ -280,15 +283,18 @@ class QueryBuilder
     private function buildInCondition($operator, $operands)
     {
         if (!isset($operands[0], $operands[1]) || !\is_array($operands)) {
-            throw new \InvalidArgumentException("Operator '$operator' requires array of two operands: column and values");
+            throw new \InvalidArgumentException(
+                "Operator '$operator' requires array of two operands: column and values"
+            );
         }
 
-        list($column, $values) = $operands;
+        [$column, $values] = $operands;
 
         $values = (array)$values;
 
         if (empty($values) || $column === []) {
-            return $operator === 'in' ? ['bool' => ['must_not' => [['match_all' => new \stdClass()]]]] : []; // this condition is equal to WHERE false
+            // this condition is equal to WHERE false
+            return $operator === 'in' ? ['bool' => ['must_not' => [['match_all' => new \stdClass()]]]] : [];
         }
 
         if (\is_array($column)) {
@@ -309,7 +315,8 @@ class QueryBuilder
         }
         if ($column === '_id') {
             if (empty($values) && $canBeNull) { // there is no null pk
-                $filter = ['bool' => ['must_not' => [['match_all' => new \stdClass()]]]]; // this condition is equal to WHERE false
+                // this condition is equal to WHERE false
+                $filter = ['bool' => ['must_not' => [['match_all' => new \stdClass()]]]];
             } else {
                 $filter = ['ids' => ['values' => \array_values($values)]];
                 if ($canBeNull) {
@@ -317,7 +324,7 @@ class QueryBuilder
                         'bool' => [
                             'should' => [
                                 $filter,
-                                'bool' => ['must_not' => ['exists' => ['field'=>$column]]],
+                                'bool' => ['must_not' => ['exists' => ['field' => $column]]],
                             ],
                         ],
                     ];
@@ -339,7 +346,7 @@ class QueryBuilder
                         'bool' => [
                             'should' => [
                                 $filter,
-                                'bool' => ['must_not' => ['exists' => ['field'=>$column]]],
+                                'bool' => ['must_not' => ['exists' => ['field' => $column]]],
                             ],
                         ],
                     ];
@@ -364,7 +371,7 @@ class QueryBuilder
             throw new \InvalidArgumentException("Operator '$operator' requires two operands.");
         }
 
-        list($column, $value) = $operands;
+        [$column, $value] = $operands;
         if ($this->connection->getDslVersion() < 7) {
             if ($column === '_id') {
                 $column = '_uid';
