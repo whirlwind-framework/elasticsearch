@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Whirlwind\ElasticSearch\Persistence\Query;
 
@@ -136,7 +138,9 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
             } elseif (isset($record['_source'][$field])) {
                 return $record['_source'][$field];
             } elseif (isset($record['fields'][$field])) {
-                return \count($record['fields'][$field]) == 1 ? \reset($record['fields'][$field]) : $record['fields'][$field];
+                return \count($record['fields'][$field]) === 1 ?
+                    \reset($record['fields'][$field]) :
+                    $record['fields'][$field];
             }
         }
         return null;
@@ -171,7 +175,9 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
         $result = $this->connection->createCommand()->search(['size' => 0]);
 
         if (isset($result['hits']['total'])) {
-            return \is_array($result['hits']['total']) ? (int)$result['hits']['total']['value'] : (int)$result['hits']['total'];
+            return \is_array($result['hits']['total']) ?
+                (int)$result['hits']['total']['value'] :
+                (int)$result['hits']['total'];
         }
         return 0;
     }
@@ -244,12 +250,12 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
 
     public function batch($scrollWindow = '1m')
     {
-        return new BatchQueryResult;
+        return new BatchQueryResult();
     }
 
     public function each($scrollWindow = '1m')
     {
-        return new BatchQueryResult;
+        return new BatchQueryResult();
     }
 
     public function from($index, $type = null)
@@ -353,7 +359,7 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
     {
         if ($this->where === null) {
             $this->where = $condition;
-        } else if (isset($this->where[0]) && $this->where[0] === 'and') {
+        } elseif (isset($this->where[0]) && $this->where[0] === 'and') {
             $this->where[] = $condition;
         } else {
             $this->where = ['and', $this->where, $condition];
@@ -365,7 +371,7 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
     {
         if ($this->where === null) {
             $this->where = $condition;
-        } else if (isset($this->where[0]) && $this->where[0] === 'or') {
+        } elseif (isset($this->where[0]) && $this->where[0] === 'or') {
             $this->where[] = $condition;
         } else {
             $this->where = ['or', $this->where, $condition];

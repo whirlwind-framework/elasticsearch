@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Whirlwind\ElasticSearch\Persistence;
 
@@ -110,7 +112,8 @@ class Connection implements ConnectionInterface
             $this->nodes = \array_values($nodes);
         } else {
             \curl_close($this->curl);
-            throw new \RuntimeException('Cluster autodetection did not find any active node. Make sure a GET /_nodes reguest on the hosts defined in the config returns the "http_address" field for each node.');
+            throw new \RuntimeException('Cluster autodetection did not find any active node. Make sure a GET ' .
+                '/_nodes reguest on the hosts defined in the config returns the "http_address" field for each node.');
         }
     }
 
@@ -236,12 +239,17 @@ class Connection implements ConnectionInterface
                 }
                 return \mb_strlen($data, '8bit');
             },
-            CURLOPT_CUSTOMREQUEST  => $method,
-            CURLOPT_FORBID_REUSE   => false,
+            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_FORBID_REUSE => false,
         ];
 
-        if (!empty($this->auth) || isset($this->nodes[$this->activeNode]['auth']) && $this->nodes[$this->activeNode]['auth'] !== false) {
-            $auth = isset($this->nodes[$this->activeNode]['auth']) ? $this->nodes[$this->activeNode]['auth'] : $this->auth;
+        if (
+            !empty($this->auth) ||
+            (isset($this->nodes[$this->activeNode]['auth']) && $this->nodes[$this->activeNode]['auth'] !== false)
+        ) {
+            $auth = isset($this->nodes[$this->activeNode]['auth']) ?
+                $this->nodes[$this->activeNode]['auth'] :
+                $this->auth;
             if (empty($auth['username'])) {
                 throw new \InvalidArgumentException('Username is required to use authentication');
             }
@@ -269,7 +277,7 @@ class Connection implements ConnectionInterface
             $options[CURLOPT_NOBODY] = false;
         }
 
-        list($protocol, $host, $q) = $url;
+        [$protocol, $host, $q] = $url;
         if (\strncmp($host, 'inet[', 5) == 0) {
             $host = \substr($host, 5, -1);
             if (($pos = \strpos($host, '/')) !== false) {
@@ -282,7 +290,9 @@ class Connection implements ConnectionInterface
         \curl_setopt($this->curl, CURLOPT_URL, $url);
         \curl_setopt_array($this->curl, $options);
         if (\curl_exec($this->curl) === false) {
-            throw new \RuntimeException('Elasticsearch request failed: ' . \curl_errno($this->curl) . ' - ' . \curl_error($this->curl));
+            throw new \RuntimeException(
+                'Elasticsearch request failed: ' . \curl_errno($this->curl) . ' - ' . \curl_error($this->curl)
+            );
         }
 
         $responseCode = \curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
@@ -291,8 +301,13 @@ class Connection implements ConnectionInterface
             if ($method === 'HEAD') {
                 return true;
             } else {
-                if (isset($headers['content-length']) && ($len = \mb_strlen($body, '8bit')) < $headers['content-length']) {
-                    throw new \RuntimeException("Incomplete data received from Elasticsearch: $len < {$headers['content-length']}");
+                if (
+                    isset($headers['content-length']) &&
+                    ($len = \mb_strlen($body, '8bit')) < $headers['content-length']
+                ) {
+                    throw new \RuntimeException(
+                        "Incomplete data received from Elasticsearch: $len < {$headers['content-length']}"
+                    );
                 }
                 if (isset($headers['content-type'])) {
                     if (!\strncmp($headers['content-type'], 'application/json', 16)) {
@@ -302,12 +317,16 @@ class Connection implements ConnectionInterface
                         return $raw ? $body : \array_filter(\explode("\n", $body));
                     }
                 }
-                throw new \RuntimeException('Unsupported data received from Elasticsearch: ' . $headers['content-type']);
+                throw new \RuntimeException(
+                    'Unsupported data received from Elasticsearch: ' . $headers['content-type']
+                );
             }
         } elseif ($responseCode == 404) {
             return false;
         } else {
-            throw new \RuntimeException("Elasticsearch request failed with code $responseCode. Response body:\n{$body}");
+            throw new \RuntimeException(
+                "Elasticsearch request failed with code $responseCode. Response body:\n{$body}"
+            );
         }
     }
 

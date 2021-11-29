@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Whirlwind\ElasticSearch\Persistence;
 
@@ -69,7 +71,7 @@ class Command
         if (\is_array($suggester)) {
             $suggester = \json_encode($suggester);
         }
-        $body = '{"suggest":'.$suggester.',"size":0}';
+        $body = '{"suggest":' . $suggester . ',"size":0}';
         $url = [
             $this->index !== null ? $this->index : '_all',
             '_search'
@@ -281,7 +283,7 @@ class Command
         if (empty($body)) {
             $body = (object) [];
         }
-       return $this->connection->post(['_search', 'scroll'], $options, \json_encode($body));
+        return $this->connection->post(['_search', 'scroll'], $options, \json_encode($body));
     }
 
     protected function removeFromArray(&$array, $key, $default = null)
@@ -302,7 +304,7 @@ class Command
         if (empty($body)) {
             $body = (object) [];
         }
-       return $this->connection->delete(['_search', 'scroll'], $options, \json_encode($body));
+        return $this->connection->delete(['_search', 'scroll'], $options, \json_encode($body));
     }
 
     public function getIndexStats($index = '_all')

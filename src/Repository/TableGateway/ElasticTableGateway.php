@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Whirlwind\ElasticSearch\Repository\TableGateway;
 
@@ -105,8 +107,13 @@ class ElasticTableGateway implements TableGatewayInterface
         throw new \RuntimeException('Not implemented');
     }
 
-    public function queryAll(array $conditions, array $order = [], int $limit = 0, int $offset = 0, array $relations = []): array
-    {
+    public function queryAll(
+        array $conditions,
+        array $order = [],
+        int $limit = 0,
+        int $offset = 0,
+        array $relations = []
+    ): array {
         $conditions = $this->conditionBuilder->build($conditions);
         /** @var Query $query */
         $query = $this->queryFactory->create($this->connection);
