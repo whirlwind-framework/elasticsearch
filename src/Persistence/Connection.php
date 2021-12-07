@@ -143,10 +143,10 @@ class Connection implements ConnectionInterface
         return $command;
     }
 
-    public function createBulkCommand($config = []): BulkCommand
+    public function createBulkCommand($index = '', $type = '', $actions = '', $options = []): BulkCommand
     {
         $this->open();
-        $command = new BulkCommand($this);
+        $command = new BulkCommand($this, $index, $type, $actions, $options);
 
         return $command;
     }
