@@ -52,7 +52,13 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
     public function createCommand()
     {
         $commandConfig = $this->connection->getQueryBuilder()->build($this);
-        return $this->connection->createCommand($commandConfig);
+
+        return $this->connection->createCommand(
+            $this->getIndex(),
+            $this->getType(),
+            $commandConfig['queryParts'],
+            $commandConfig['options']
+        );
     }
 
     public function all(): array
@@ -90,7 +96,7 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
 
     public function one()
     {
-        $result = $this->connection->createCommand()->search(['size' => 1]);
+        $result = $this->createCommand()->search(['size' => 1]);
         if ($result === false) {
             throw new \RuntimeException('Elasticsearch search query failed.');
         }
@@ -104,7 +110,7 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
 
     public function search($options = [])
     {
-        $result = $this->connection->createCommand()->search($options);
+        $result = $this->createCommand()->search($options);
         if ($result === false) {
             throw new \RuntimeException('Elasticsearch search query failed.');
         }
@@ -112,8 +118,7 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
             $rows = [];
             foreach ($result['hits']['hits'] as $key => $row) {
                 if (\is_string($this->indexBy)) {
-                    $key = isset($row['fields'][$this->indexBy]) ?
-                        $row['fields'][$this->indexBy] : $row['_source'][$this->indexBy];
+                    $key = $row['fields'][$this->indexBy] ?? $row['_source'][$this->indexBy];
                 } else {
                     $key = \call_user_func($this->indexBy, $row);
                 }
@@ -126,7 +131,7 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
 
     public function delete($options = [])
     {
-        return $this->connection->createCommand()->deleteByQuery($options);
+        return $this->createCommand()->deleteByQuery($options);
     }
 
     public function scalar($field)
@@ -148,7 +153,7 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
 
     public function column($field)
     {
-        $command = $this->connection->createCommand();
+        $command = $this->createCommand();
         $command->queryParts['_source'] = [$field];
         $result = $command->search();
         if ($result === false) {
@@ -172,7 +177,7 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
 
     public function count($q = '*'): int
     {
-        $result = $this->connection->createCommand()->search(['size' => 0]);
+        $result = $this->createCommand()->search(['size' => 0]);
 
         if (isset($result['hits']['total'])) {
             return \is_array($result['hits']['total']) ?
