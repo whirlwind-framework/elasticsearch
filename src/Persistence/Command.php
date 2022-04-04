@@ -6,19 +6,27 @@ namespace Whirlwind\ElasticSearch\Persistence;
 
 class Command
 {
-    protected $connection;
+    protected Connection $connection;
 
-    public $index;
+    protected ?string $index = null;
 
-    public $type;
+    protected ?string $type = null;
 
-    public $queryParts;
+    protected array $queryParts = [];
 
-    protected $options;
+    protected array $options;
 
-    public function __construct(Connection $connection, array $options = [])
-    {
+    public function __construct(
+        Connection $connection,
+        string $index = '',
+        ?string $type = null,
+        array $queryParts = [],
+        array $options = []
+    ) {
         $this->connection = $connection;
+        $this->index = $index;
+        $this->type = $type;
+        $this->queryParts = $queryParts;
         $this->options = $options;
     }
 
