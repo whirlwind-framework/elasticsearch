@@ -363,7 +363,7 @@ class Command
     public function createTemplate($name, $pattern, $settings, $mappings, $order = 0)
     {
         $body = \json_encode([
-            'template' => $pattern,
+            'index_patterns' => $pattern,
             'order' => $order,
             'settings' => (object) $settings,
             'mappings' => (object) $mappings,
