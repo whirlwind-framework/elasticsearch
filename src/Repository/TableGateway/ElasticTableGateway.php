@@ -122,6 +122,12 @@ class ElasticTableGateway implements TableGatewayInterface
         int $offset = 0,
         array $relations = []
     ): array {
+        $aggregations = [];
+        if (isset($conditions['aggregations'])) {
+            $aggregations = $conditions['aggregations'];
+            unset($conditions['aggregations']);
+        }
+
         $conditions = $this->conditionBuilder->build($conditions);
         /** @var Query $query */
         $query = $this->queryFactory->create($this->connection);
@@ -137,7 +143,16 @@ class ElasticTableGateway implements TableGatewayInterface
             $query->orderBy($order);
         }
 
-        return $query->all();
+        foreach ($aggregations as $name => $value) {
+            $query->addAggregate($name, $value);
+        }
+
+        $result = $query->createCommand()->search();
+        if ($result === false) {
+            throw new \RuntimeException('Elasticsearch search query failed.');
+        }
+
+        return $result;
     }
 
     public function aggregate($column, $operator, array $conditions): string
