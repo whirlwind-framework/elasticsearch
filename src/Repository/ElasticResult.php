@@ -6,7 +6,7 @@ namespace Whirlwind\ElasticSearch\Repository;
 
 use Whirlwind\Infrastructure\Repository\Result;
 
-class ElasticResult implements Result
+class ElasticResult extends Result
 {
     protected int $total;
     protected array $aggregations;

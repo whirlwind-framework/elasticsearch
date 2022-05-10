@@ -14,7 +14,7 @@ class ElasticDataProvider extends DataProvider
     /**
      * @var array
      */
-    protected array $aggregations;
+    protected array $aggregations = [];
 
     protected function loadData()
     {
@@ -38,6 +38,17 @@ class ElasticDataProvider extends DataProvider
         }
     }
 
+    /**
+     * @return array
+     */
+    public function getAggregations(): array
+    {
+        if (!$this->dataLoaded) {
+            $this->loadData();
+        }
+
+        return $this->aggregations;
+    }
 
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
