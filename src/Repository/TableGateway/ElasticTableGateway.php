@@ -144,12 +144,27 @@ class ElasticTableGateway implements TableGatewayInterface
         }
 
         foreach ($aggregations as $name => $value) {
-            $query->addAggregate($name, $value);
+            $query->addAggregate($name, $this->normalizeAggregationBody($value));
         }
 
         $result = $query->createCommand()->search();
         if ($result === false) {
             throw new \RuntimeException('Elasticsearch search query failed.');
+        }
+
+        return $result;
+    }
+
+    protected function normalizeAggregationBody(array $aggregation): array
+    {
+        $result = [];
+        foreach ($aggregation as $key => $value) {
+            if (\is_array($value) && empty($value)) {
+                $value = new \stdClass();
+            } elseif (\is_array($value)) {
+                $value = $this->normalizeAggregationBody($value);
+            }
+            $result[$key] = $value;
         }
 
         return $result;
