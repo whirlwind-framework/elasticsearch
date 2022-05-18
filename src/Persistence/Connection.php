@@ -30,7 +30,7 @@ class Connection implements ConnectionInterface
     public function __construct(
         array $nodes = [['http_address' => 'inet[/127.0.0.1:9200]']],
         bool $autodetectCluster = true,
-        string $activeNode = '',
+        ?string $activeNode = null,
         array $auth = [],
         string $defaultProtocol = 'http',
         int $dslVersion = 5,
@@ -135,12 +135,15 @@ class Connection implements ConnectionInterface
         }
     }
 
-    public function createCommand(array $options = []): Command
-    {
+    public function createCommand(
+        string $index = '',
+        ?string $type = null,
+        array $queryParts = [],
+        array $options = []
+    ): Command {
         $this->open();
-        $command = new Command($this, $options);
 
-        return $command;
+        return new Command($this, $index, $type, $queryParts, $options);
     }
 
     public function createBulkCommand($index = '', $type = '', $actions = '', $options = []): BulkCommand
@@ -277,14 +280,16 @@ class Connection implements ConnectionInterface
             $options[CURLOPT_NOBODY] = false;
         }
 
-        [$protocol, $host, $q] = $url;
-        if (\strncmp($host, 'inet[', 5) == 0) {
-            $host = \substr($host, 5, -1);
-            if (($pos = \strpos($host, '/')) !== false) {
-                $host = \substr($host, $pos + 1);
+        if (\is_array($url)) {
+            [$protocol, $host, $q] = $url;
+            if (\strncmp($host, 'inet[', 5) == 0) {
+                $host = \substr($host, 5, -1);
+                if (($pos = \strpos($host, '/')) !== false) {
+                    $host = \substr($host, $pos + 1);
+                }
             }
+            $url = "$protocol://$host/$q";
         }
-        $url = "$protocol://$host/$q";
 
         $this->resetCurlHandle();
         \curl_setopt($this->curl, CURLOPT_URL, $url);

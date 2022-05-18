@@ -14,15 +14,15 @@ use Whirlwind\Infrastructure\Repository\TableGateway\TableGatewayInterface;
 
 class ElasticTableGateway implements TableGatewayInterface
 {
-    protected $connection;
+    protected Connection $connection;
 
-    protected $queryFactory;
+    protected QueryFactory $queryFactory;
 
-    protected $conditionBuilder;
+    protected ConditionBuilder $conditionBuilder;
 
-    protected $collectionName;
+    protected string $collectionName;
 
-    protected $documentType;
+    protected string $documentType;
 
     public function __construct(
         Connection $connection,
@@ -41,13 +41,12 @@ class ElasticTableGateway implements TableGatewayInterface
     public function queryOne(array $conditions, array $relations = []): ?array
     {
         $conditions = $this->conditionBuilder->build($conditions);
-        /** @var Query $query */
         $query = $this->queryFactory->create($this->connection);
         $query
             ->from($this->collectionName)
             ->where($conditions);
         $result = $query->one();
-        return $result ? $result : null;
+        return $result ?: null;
     }
 
     public function insert(array $data, array $options = []): ?array
@@ -62,7 +61,7 @@ class ElasticTableGateway implements TableGatewayInterface
             $this->collectionName,
             $this->documentType,
             $data,
-            (isset($id) ? $id : null),
+            $id ?? null,
             $options
         );
         return ['_id' => $result['_id']];
@@ -104,7 +103,16 @@ class ElasticTableGateway implements TableGatewayInterface
 
     public function deleteAll(array $conditions): int
     {
-        throw new \RuntimeException('Not implemented');
+        $result = $this->connection->createCommand(
+            $this->collectionName,
+            $this->documentType,
+            [
+                'query' => $this->conditionBuilder->build($conditions)
+            ]
+        )
+            ->deleteByQuery();
+
+        return \is_array($result) ? $result['total'] : 0;
     }
 
     public function queryAll(
@@ -114,6 +122,12 @@ class ElasticTableGateway implements TableGatewayInterface
         int $offset = 0,
         array $relations = []
     ): array {
+        $aggregations = [];
+        if (isset($conditions['aggregations'])) {
+            $aggregations = $conditions['aggregations'];
+            unset($conditions['aggregations']);
+        }
+
         $conditions = $this->conditionBuilder->build($conditions);
         /** @var Query $query */
         $query = $this->queryFactory->create($this->connection);
@@ -129,7 +143,31 @@ class ElasticTableGateway implements TableGatewayInterface
             $query->orderBy($order);
         }
 
-        return $query->all();
+        foreach ($aggregations as $name => $value) {
+            $query->addAggregate($name, $this->normalizeAggregationBody($value));
+        }
+
+        $result = $query->createCommand()->search();
+        if ($result === false) {
+            throw new \RuntimeException('Elasticsearch search query failed.');
+        }
+
+        return $result;
+    }
+
+    protected function normalizeAggregationBody(array $aggregation): array
+    {
+        $result = [];
+        foreach ($aggregation as $key => $value) {
+            if (\is_array($value) && empty($value)) {
+                $value = new \stdClass();
+            } elseif (\is_array($value)) {
+                $value = $this->normalizeAggregationBody($value);
+            }
+            $result[$key] = $value;
+        }
+
+        return $result;
     }
 
     public function aggregate($column, $operator, array $conditions): string
