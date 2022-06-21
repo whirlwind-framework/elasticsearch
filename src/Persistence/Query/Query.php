@@ -153,8 +153,8 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
 
     public function column($field)
     {
+        $this->source = [$field];
         $command = $this->createCommand();
-        $command->queryParts['_source'] = [$field];
         $result = $command->search();
         if ($result === false) {
             throw new \RuntimeException('Elasticsearch search query failed.');
@@ -263,7 +263,7 @@ class Query extends \Whirlwind\Infrastructure\Persistence\Query
         return new BatchQueryResult();
     }
 
-    public function from($index, $type = null)
+    public function from($index, $type = null): self
     {
         $this->index = $index;
         $this->type = $type;
